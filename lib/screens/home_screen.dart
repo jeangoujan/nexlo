@@ -214,18 +214,14 @@ class _HomeScreenState extends State<HomeScreen> {
             final sessionsForSkill =
                 sessionBox.values.where((sess) => sess.skillId == s.id).toList();
 
-            double totalHours;
+            final baselineHours = s.totalHours;
 
-            if (sessionsForSkill.isEmpty) {
-              // если нет сессий — используем сохранённое значение из Skill
-              totalHours = s.totalHours;
-            } else {
-              // иначе — реальное суммарное время по всем сессиям
-              final totalMinutes = sessionsForSkill.fold<double>(
-                0,
-                (sum, sess) => sum + sess.durationMinutes,
-              );
-              totalHours = totalMinutes / 60.0; }
+            final sessionMinutes = sessionsForSkill.fold<double>(
+              0,
+              (sum, sess) => sum + sess.durationMinutes,
+            );
+
+            final totalHours = baselineHours + (sessionMinutes / 60.0);
 
             // округляем вниз до целого
             final displayHours = totalHours < 1 ? 0 : totalHours.floor();
@@ -452,6 +448,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (confirm == true) {
+      debugPrint('🧩 DELETE skill: name=${s.name} id=${s.id} key=${s.key}');
+      debugPrint('📦 skills box: len=${skillBox.length} keys=${skillBox.keys.take(20).toList()}');
       // 1️⃣ Удаляем все сессии этого скилла
       final sessionBox = HiveBoxes.sessionBox();
       final sessionsToDelete = sessionBox.values
@@ -459,11 +457,11 @@ class _HomeScreenState extends State<HomeScreen> {
           .toList();
 
       for (final sess in sessionsToDelete) {
-        await sessionBox.delete(sess.id); // id сессии = ключ
+        await sess.delete(); // id сессии = ключ
       }
 
       // 2️⃣ Удаляем сам скилл
-      await skillBox.delete(s.id); // вместо deleteAt(i)
+      await s.delete(); // вместо deleteAt(i)
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -658,17 +656,17 @@ final choice = await showModalBottomSheet<String>(
       context,
       MaterialPageRoute(builder: (_) => const AddSkillScreen()),
     );
-    if (newSkill != null && newSkill is Skill) {
-      skillBox.put(newSkill.id, newSkill);
-    }
+    //if (newSkill != null && newSkill is Skill) {
+    //  await skillBox.add(newSkill);  // skillBox.put(newSkill.id, newSkill);
+    //}
   } else if (choice == 'existing') {
     final existingSkill = await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const AddExistingSkillScreen()),
     );
-    if (existingSkill != null && existingSkill is Skill) {
-      skillBox.put(existingSkill.id, existingSkill);
-    }
+    //if (existingSkill != null && existingSkill is Skill) {
+    //  await skillBox.add(existingSkill);// skillBox.put(existingSkill.id, existingSkill);
+   // }
   }
 },
 ),

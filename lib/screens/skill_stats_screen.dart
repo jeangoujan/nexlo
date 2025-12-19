@@ -39,14 +39,17 @@ class _SkillStatsScreenState extends State<SkillStatsScreen> {
               ..sort((a, b) => b.date.compareTo(a.date));
 
             // --- Total minutes ---
-            double totalMinutes;
-            if (sessions.isEmpty) {
-              totalMinutes = liveSkill.totalHours * 60;
-            } else {
-              totalMinutes = sessions.fold<double>(0, (sum, s) => sum + s.durationMinutes);
-            }
+            final baselineMinutes = liveSkill.totalHours * 60;
 
+            final sessionMinutes = sessions.fold<double>(
+              0,
+              (sum, s) => sum + s.durationMinutes,
+            );
+
+            final totalMinutes = baselineMinutes + sessionMinutes;
             final totalHours = totalMinutes / 60.0;
+
+
 
             // --- Exact progress (no rounding) ---
             double goalProgress = 0.0;

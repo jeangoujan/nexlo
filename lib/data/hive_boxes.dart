@@ -18,6 +18,7 @@ class HiveBoxes {
     await Hive.openBox<Skill>(skills);
     await Hive.openBox<Session>(sessions);
     await Hive.openBox(timer); // тут будет Map<String, dynamic>-подобное хранилище
+    final skillBox = Hive.box<Skill>(skills);
   }
 
   static Box<Skill> skillBox() => Hive.box<Skill>(skills);
